@@ -1,25 +1,43 @@
 package com.tochka.tochka_messenger.DB.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
-    @Setter@Getter
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Setter@Getter
+
+    @Column(nullable = false, unique = true)
     private String username;
-    @Setter@Getter
+
+    @Column(nullable = false)
     private String password;
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<RefreshToken> refreshTokens = new HashSet<>();
+
+    @ManyToMany(mappedBy = "users")
+    private Set<Chat> chats = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Message> messages = new HashSet<>();
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "last_active")
+    private Instant lastActive;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        lastActive = Instant.now();
+    }
 }
