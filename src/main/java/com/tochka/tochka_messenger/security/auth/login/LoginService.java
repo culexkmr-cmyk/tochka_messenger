@@ -6,30 +6,39 @@ import com.tochka.tochka_messenger.security.JWT.RefreshTokenGenerator;
 import com.tochka.tochka_messenger.security.auth.Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class LoginService {
+
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
     @Autowired
-    Encoder encoder;
+    private Encoder encoder;
+
     @Autowired
-    RefreshTokenGenerator refreshTokenGenerator;
+    private RefreshTokenGenerator refreshTokenGenerator;
+
     @Autowired
-    AccessTokenGenerator accessTokenGenerator;
-    public ResponseEntity<?> login(String password, String username){
-        if (userRepository.findByUsername(username).isPresent()){
-            if (encoder.match(password, userRepository.findByUsername(username).get().getPassword())){
-                return ResponseEntity.status(HttpStatus.OK).
-                        body(Map.of("refreshToken", refreshTokenGenerator.generateRefreshToken(username),
-                                "accessToken",accessTokenGenerator.generateAccessToken(username, Map.of("type","access","username", username ))));
-            }
-            else {return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();}
-        }
-        else {return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();}
+    private AccessTokenGenerator accessTokenGenerator;
+
+    public LoginResult login(String password, String username) {
+        return userRepository.findByUsername(username)
+                .filter(user -> encoder.match(password, user.getPassword()))
+                .map(user -> {
+                    Map<String, Object> claims = new HashMap<>();
+                    claims.put("type", "access");
+                    claims.put("username", username);
+
+                    String accessToken = accessTokenGenerator.generateAccessToken(username, claims);
+                    String refreshToken = refreshTokenGenerator.generateRefreshToken(username);
+
+                    return LoginResult.success(accessToken, refreshToken);
+                })
+                .orElse(LoginResult.failure(HttpStatus.UNAUTHORIZED));
     }
 }
