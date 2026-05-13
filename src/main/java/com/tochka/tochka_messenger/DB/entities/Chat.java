@@ -19,9 +19,7 @@ public class Chat {
 
     @Column(name = "name", nullable = false)
     private String name; // Название чата
-
-    @Column(name = "is_group", nullable = false)
-    private Boolean isGroup = false; // Групповой чат или личный
+    // Групповой чат или личный
 
     @ManyToMany
     @JoinTable(
