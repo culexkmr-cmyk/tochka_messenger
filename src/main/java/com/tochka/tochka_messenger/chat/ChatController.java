@@ -2,10 +2,11 @@ package com.tochka.tochka_messenger.chat;
 
 import com.tochka.tochka_messenger.DB.entities.Chat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -15,51 +16,59 @@ public class ChatController {
     @Autowired
     private ChatService chatService;
 
-    @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/create")
     public ResponseEntity<?> createChat(@RequestBody CreateChatRequest request) {
-        Chat chat = chatService.createChat(request.getChatName(), request.getParticipants());
-        if (chat != null) {
-            return ResponseEntity.ok(chat);
+        try {
+            Chat chat = chatService.createChat(request.getChatName(), request.getParticipantUsernames());
+            if (chat == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not authenticated or invalid session"));
+            }
+            return ResponseEntity.ok(Map.of(
+                    "id", chat.getId(),
+                    "name", chat.getName(),
+                    "message", "Chat created successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to create chat: " + e.getMessage()));
         }
-        return ResponseEntity.status(403).body("Failed to create chat: unauthorized or invalid participants");
     }
 
-    @GetMapping
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Set<Chat>> getUserChats() {
-        Set<Chat> chats = chatService.getUserChats();
-        return ResponseEntity.ok(chats);
-    }
-
-    @GetMapping("/{chatId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getChat(@PathVariable Long chatId) {
-        Chat chat = chatService.getChatById(chatId);
-        if (chat != null) {
-            return ResponseEntity.ok(chat);
+    @PostMapping("/{chatId}/add-user")
+    public ResponseEntity<?> addUserToChat(@PathVariable Long chatId, @RequestBody AddUserRequest request) {
+        try {
+            Chat updatedChat = chatService.addUserToChat(chatId, request.getUsername());
+            if (updatedChat == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Chat not found or you don't have permission to add users"));
+            }
+            return ResponseEntity.ok(Map.of(
+                    "chatId", updatedChat.getId(),
+                    "chatName", updatedChat.getName(),
+                    "message", "User added successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to add user: " + e.getMessage()));
         }
-        return ResponseEntity.status(404).body("Chat not found or access denied");
     }
-    @PostMapping("/{chatId}/users")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> addUserToChat(@PathVariable Long chatId,
-                                           @RequestBody AddUserRequest request) {
-        Chat chat = chatService.addUserToChat(chatId, request.getUsername());
-        if (chat != null) {
-            return ResponseEntity.ok(chat);
-        }
-        return ResponseEntity.status(403).body("Failed to add user: unauthorized or user not found");
-    }
+}
 
-    @lombok.Data
-    public static class CreateChatRequest {
-        private String chatName;
-        private Set<String> participants;
-    }
+// DTO классы для запросов
+class CreateChatRequest {
+    private String chatName;
+    private Set<String> participantUsernames;
 
-    @lombok.Data
-    public static class AddUserRequest {
-        private String username;
-    }
+    public String getChatName() { return chatName; }
+    public void setChatName(String chatName) { this.chatName = chatName; }
+    public Set<String> getParticipantUsernames() { return participantUsernames; }
+    public void setParticipantUsernames(Set<String> participantUsernames) { this.participantUsernames = participantUsernames; }
+}
+
+class AddUserRequest {
+    private String username;
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 }
