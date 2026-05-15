@@ -1,6 +1,7 @@
 package com.tochka.tochka_messenger.chat;
 
 import com.tochka.tochka_messenger.DB.entities.Chat;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,22 +54,41 @@ public class ChatController {
                     .body(Map.of("error", "Failed to add user: " + e.getMessage()));
         }
     }
+    @PutMapping("/create")
+    public ResponseEntity<?> updateChatName(@RequestBody UpdateChatNameRequest request) {
+        try {
+            Chat chat = chatService.updateChatName(request.getChatId(), request.getNewChatName());
+            if (chat == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not authenticated or invalid session"));
+            }
+            return ResponseEntity.ok(Map.of(
+                    "id", chat.getId(),
+                    "name", chat.getName(),
+                    "message", "Chat created successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to update chatName: " + e.getMessage()));
+        }
+    }
 }
 
-// DTO классы для запросов
+@Data
 class CreateChatRequest {
+    private Long chatId;
     private String chatName;
     private Set<String> participantUsernames;
-
-    public String getChatName() { return chatName; }
-    public void setChatName(String chatName) { this.chatName = chatName; }
-    public Set<String> getParticipantUsernames() { return participantUsernames; }
-    public void setParticipantUsernames(Set<String> participantUsernames) { this.participantUsernames = participantUsernames; }
+}
+@Data
+class UpdateChatNameRequest {
+    private Long chatId;
+    private String newChatName;
 }
 
+@Data
 class AddUserRequest {
+    private Long chatId;
     private String username;
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
 }

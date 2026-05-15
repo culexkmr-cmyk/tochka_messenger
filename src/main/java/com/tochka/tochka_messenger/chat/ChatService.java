@@ -53,9 +53,6 @@ public class ChatService {
         User currentUser = (User) authentication.getPrincipal();
 
         Chat chat = chatRepository.findById(chatId).orElse(null);
-        if (chat == null) {
-            return null;
-        }
         if (!chat.getUsers().contains(currentUser)) {
             return null;
         }
@@ -66,5 +63,19 @@ public class ChatService {
             return chatRepository.save(chat);
         }
         return null;
+    }
+    public Chat updateChatName(Long chatId, String newChatName){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+            return null;
+        }
+        User currentUser = (User) authentication.getPrincipal();
+        Chat chat = chatRepository.findById(chatId).orElse(null);
+
+        if (!chat.getUsers().contains(currentUser)) {
+            return null;
+        }
+        chat.setName(newChatName);
+        return chatRepository.save(chat);
     }
 }

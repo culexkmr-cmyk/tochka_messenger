@@ -13,7 +13,6 @@ public class MessageDto {
     private Long messageId;
     private String message;
     private Set<Media> mediaSet;
-    private UserDto user;
     private Instant time;
     private Long chatId;
 }

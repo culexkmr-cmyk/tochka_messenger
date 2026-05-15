@@ -96,7 +96,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private boolean validateToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
+            Claims claims = Jwts.parser()
                     .setSigningKey(getAccessKey())
                     .build()
                     .parseClaimsJws(token)
@@ -106,13 +106,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                     audience.equals(claims.getAudience()) &&
                     claims.getExpiration().after(new Date());
         } catch (Exception e) {
-            logger.debug("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }
 
     private String extractUsername(String token) {
-        return Jwts.parserBuilder()
+        return Jwts.parser()
                 .setSigningKey(getAccessKey())
                 .build()
                 .parseClaimsJws(token)

@@ -2,14 +2,22 @@ package com.tochka.tochka_messenger.chat;
 
 import com.tochka.tochka_messenger.DB.entities.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import java.util.Map;
+
+@RestController
 public class MessageController {
 
     @Autowired
@@ -39,7 +47,7 @@ public class MessageController {
 
         // Для редактирования используем отдельный метод сервиса с проверкой авторства
         Message savedMessage = messageService.editMessage(
-                messageDto.getMessageId(), // Предполагается, что DTO содержит ID сообщения
+                messageDto.getMessageId(),
                 messageDto.getMessage(),
                 messageDto.getChatId()
         );

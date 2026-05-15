@@ -45,9 +45,6 @@ public class Message {
     @Column(name = "edited_at")
     private Instant editedAt;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
     @Column(name = "reply_to_message_id")
     private Long replyToMessageId;
 
@@ -62,7 +59,4 @@ public class Message {
         this.editedAt = Instant.now();
     }
 
-    public void softDelete() {
-        this.isDeleted = true;
-    }
 }
