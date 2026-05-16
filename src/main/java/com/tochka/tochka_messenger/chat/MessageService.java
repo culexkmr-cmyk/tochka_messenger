@@ -49,7 +49,6 @@ public class MessageService {
         message.setUser(authenticatedUser); // Используем аутентифицированного пользователя
         message.setText(messageDto.getMessage());
         message.setCreatedAt(Instant.now());
-        message.setIsDeleted(Boolean.FALSE);
         message.setMediaList(messageDto.getMediaSet());
 
         return messageRepository.save(message);
@@ -64,7 +63,7 @@ public class MessageService {
         User authenticatedUser = (User) authentication.getPrincipal();
 
         Message message = messageRepository.findById(messageId).orElse(null);
-        if (message == null || message.getIsDeleted() || !message.getChat().getId().equals(chatId)) {
+        if (message == null || !message.getChat().getId().equals(chatId)) {
             return null;
         }
 

@@ -19,7 +19,11 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String username;
-
+    @Column(nullable = true)
+    private String nickname;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profile_picture_id",nullable = true)
+    private Media profile_picture;
     @Column(nullable = false)
     private String password;
 

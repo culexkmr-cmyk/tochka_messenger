@@ -8,5 +8,4 @@ public class TochkaMessengerApplication{
 	static void main(String[] args) {
 		SpringApplication.run(TochkaMessengerApplication.class, args);
 	}
-
 }
