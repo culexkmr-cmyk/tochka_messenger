@@ -1,6 +1,7 @@
 package com.tochka.tochka_messenger.chat;
 
 import com.tochka.tochka_messenger.DB.entities.Chat;
+import com.tochka.tochka_messenger.DB.entities.Media;
 import com.tochka.tochka_messenger.DB.entities.User;
 import com.tochka.tochka_messenger.DB.repositories.ChatRepository;
 import com.tochka.tochka_messenger.DB.repositories.UserRepository;
@@ -9,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +26,7 @@ public class ChatService {
 
     @Autowired
     private UserRepository userRepository;
+
     public Chat createChat(String chatName, Set<String> participantUsernames) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()
@@ -45,6 +49,7 @@ public class ChatService {
         chat.setUsers(chatUsers);
         return chatRepository.save(chat);
     }
+
     public Chat addUserToChat(Long chatId, String usernameToAdd) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
@@ -64,7 +69,8 @@ public class ChatService {
         }
         return null;
     }
-    public Chat updateChatName(Long chatId, String newChatName){
+
+    public Chat updateChatName(Long chatId, String newChatName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
             return null;

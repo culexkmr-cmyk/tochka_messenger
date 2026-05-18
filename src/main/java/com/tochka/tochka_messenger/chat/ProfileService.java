@@ -37,7 +37,7 @@ public class ProfileService {
             throw new IllegalArgumentException("Nickname cannot be empty");
         }
         user.setNickname(newNickname.trim());
-        return userRepository.save(user);   
+        return userRepository.save(user);
     }
     public User updateProfilePicture(User user, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
